@@ -14,19 +14,19 @@ java -jar <runable JAR path> <your language path>
 Above jdk1.8.0
 ## LANGUAGE FORMAT
 The input language must be augmented language(added S1 -> S)
-- augmented producion must in first line
-- one produciton per line
-- the production format just like
+- augmented production must be in the first line
+- one production per line
+- format of production:
     ```
     <E> ::= <E> "+" <T>
     ```
-- the non-terminal is surrounded by angle brackets
-- the token(terminal) is surrounded by quotation
+- the non-terminal should be surrounded by angle brackets
+- the token(terminal) should be surrounded by quotation
 ## OUTPUT
 - the result will be displayed in command line
 - It will create result file in the parent directory of your language file
 ### note
-If your language is not LL, it will still create LL analysis form  because of lacking check the examination of LL conflict<br>
+It will still create LL analysis form, even if your language is not LL as result of lacking examination of LL conflict<br>
 However, if your language is not SLR or LR1, Accordingly, it will not create corresponding analysis form or items
 ### EXAMPLE
 #### input language
