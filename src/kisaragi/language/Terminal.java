@@ -3,35 +3,40 @@ package kisaragi.language;
 import java.util.HashMap;
 
 /**
- * ´Ê·¨µ¥Ôª
- * ÓïÑÔÖĞµÄ»ù±¾Ô´×Ö·ûÓÉ¸ÃTokenÀà¶¨Òå£¬±ÈÈç£º()[]
+ * è¯æ³•å•å…ƒ
+ * è¯­è¨€ä¸­çš„åŸºæœ¬æºå­—ç¬¦ç”±è¯¥Tokenç±»å®šä¹‰ï¼Œæ¯”å¦‚ï¼š()[]
  * @author KisaragiAoshiro
  *
  */
-public class Token extends Symbol {
+public class Terminal extends Symbol {
 	/**
-	 * ¦Å
+	 * Îµ
 	 */
-	public static final Token e = new Token(1);
+	public static final Terminal e = new Terminal(1);
 	/**
 	 * $(end)
 	 */
-	public static final Token end = new Token(0);
+	public static final Terminal end = new Terminal(0);
 	/**
 	 * Unknown
 	 */
-	public static final Token unknow = new Token(-1);
+	public static final Terminal unknow = new Terminal(-1);
 	
-	private static HashMap<String, Token> dictionary = new HashMap<String, Token>();
+	private static HashMap<String, Terminal> dictionary = new HashMap<String, Terminal>();
+	private static int index = 256;
 	
 	public final int tag;
 	
-	private Token(int t) {
+	private Terminal(int t) {
 		super(true);
 		tag = t;
 	}
 	
-	public static Token getToken(String lex) {
+	public static Terminal getTerminal(char c) {
+		return new Terminal(c);
+	}
+	
+	public static Terminal getTerminal(String lex) {
 		if(lex == null || lex.length() == 0) {
 			return null;
 		}
@@ -39,17 +44,15 @@ public class Token extends Symbol {
 			return dictionary.get(lex);
 		}
 		if(lex.length() == 1) {
-			Token token = new Token((int)lex.charAt(0));
-			dictionary.put(lex, token);
-			return token;
+			return new Terminal(lex.charAt(0));
 		}
-		Token token = new Token(lex.hashCode());
+		Terminal token = new Terminal(index++);
 		dictionary.put(lex, token);
 		return token;
 	}
 	
 	/**
-	 * ÖØĞ´ObjectÀàµÄtoString·½·¨£¬ÓÃÓÚµ÷ÊÔÊ±ÏÔÊ¾TokenÊµÀı
+	 * é‡å†™Objectç±»çš„toStringæ–¹æ³•ï¼Œç”¨äºè°ƒè¯•æ—¶æ˜¾ç¤ºTokenå®ä¾‹
 	 */
 	public String toString() {
 		if(tag == -1) {
@@ -59,20 +62,18 @@ public class Token extends Symbol {
 			return "$";
 		}
 		if(tag == 1) {
-			return "¦Å"; 
+			return "Îµ"; 
 		}
 		if(tag < 256) {
 			return "" + (char)tag;
 		}
 		else {
-			String str = null;
 			for(String lex : dictionary.keySet()) {
-				if(lex.hashCode() == tag) {
-					str = lex;
-					break;
+				if(dictionary.get(lex).equals(this)) {
+					return lex;
 				}
 			}
-			return str;
+			return null;
 		}
 	}
 
@@ -92,7 +93,7 @@ public class Token extends Symbol {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Token other = (Token) obj;
+		Terminal other = (Terminal) obj;
 		if (tag != other.tag)
 			return false;
 		return true;
