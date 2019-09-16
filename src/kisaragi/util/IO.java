@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
 
 public class IO {
 	/**
-	 * ´ÓpathÖ¸¶¨µÄÎÄ¼şÖĞ¶ÁÈ¡ÎÄ±¾£¬ÒÔcharsetNameÖ¸¶¨ÎÄ¼ş±àÂë
-	 * @param path ÎÄ¼şÂ·¾¶
-	 * @param charsetName ÎÄ¼ş±àÂë
-	 * @return ÎÄ±¾
+	 * ä»pathæŒ‡å®šçš„æ–‡ä»¶ä¸­è¯»å–æ–‡æœ¬ï¼Œä»¥charsetNameæŒ‡å®šæ–‡ä»¶ç¼–ç 
+	 * @param path æ–‡ä»¶è·¯å¾„
+	 * @param charsetName æ–‡ä»¶ç¼–ç 
+	 * @return æ–‡æœ¬
 	 */
 	public static String readText(String path, String charsetName) {
 		StringBuffer sb = null;
@@ -37,22 +37,22 @@ public class IO {
 	}
 	
 	/**
-	 * ´ÓpathÖ¸¶¨µÄÎÄ¼şÖĞ¶ÁÈ¡ÎÄ±¾£¬ÒÔÏµÍ³Ä¬ÈÏ±àÂë
-	 * <p>Ïàµ±ÓÚreadText(path, Charset.defaultCharset().toString())
-	 * @param path ÎÄ¼şÂ·¾¶
-	 * @return ÎÄ±¾
+	 * ä»pathæŒ‡å®šçš„æ–‡ä»¶ä¸­è¯»å–æ–‡æœ¬ï¼Œä»¥ç³»ç»Ÿé»˜è®¤ç¼–ç 
+	 * <p>ç›¸å½“äºreadText(path, Charset.defaultCharset().toString())
+	 * @param path æ–‡ä»¶è·¯å¾„
+	 * @return æ–‡æœ¬
 	 */
 	public static String readText(String path) {
 		return readText(path, Charset.defaultCharset().toString());
 	}
 	
 	/**
-	 * ÏòoutputPathÖ¸¶¨µÄÎÄ¼şÖĞĞ´ÈëÎÄ±¾content£¬ÒÔcharsetNameÖ¸¶¨±£´æ±àÂë
-	 * <p>´Ë·½·¨×¨ÎªWindowsÆ½Ì¨Éè¼Æ£¬»»ĞĞ·û»áÒÔ\r\nÈ¡´ú\n
-	 * @param content ´ıĞ´ÈëµÄÎÄ±¾ÄÚÈİ
-	 * @param outputPath ÎÄ¼şÂ·¾¶
-	 * @param append Ö¸¶¨Ğ´Èë·½Ê½ÊÇ·ñÎª×·¼Ó
-	 * @param charsetName ±£´æ±àÂë
+	 * å‘outputPathæŒ‡å®šçš„æ–‡ä»¶ä¸­å†™å…¥æ–‡æœ¬contentï¼Œä»¥charsetNameæŒ‡å®šä¿å­˜ç¼–ç 
+	 * <p>æ­¤æ–¹æ³•ä¸“ä¸ºWindowså¹³å°è®¾è®¡ï¼Œæ¢è¡Œç¬¦ä¼šä»¥\r\nå–ä»£\n
+	 * @param content å¾…å†™å…¥çš„æ–‡æœ¬å†…å®¹
+	 * @param outputPath æ–‡ä»¶è·¯å¾„
+	 * @param append æŒ‡å®šå†™å…¥æ–¹å¼æ˜¯å¦ä¸ºè¿½åŠ 
+	 * @param charsetName ä¿å­˜ç¼–ç 
 	 */
 	public static void writeText(String content, String outputPath, boolean append, String charsetName) {
 		BufferedWriter bw = null;
@@ -69,12 +69,12 @@ public class IO {
 	}
 	
 	/**
-	 * ÏòoutputPathÖ¸¶¨µÄÎÄ¼şÖĞĞ´ÈëÎÄ±¾content£¬ÒÔÏµÍ³Ä¬ÈÏ±àÂë±£´æ
-	 * <p>´Ë·½·¨×¨ÎªWindowsÆ½Ì¨Éè¼Æ£¬»»ĞĞ·û»áÒÔ\r\nÈ¡´ú\n
-	 * <p>Ïàµ±ÓÚwriteText(content, outputPath, append, Charset.defaultCharset().toString())
-	 * @param content ´ıĞ´ÈëµÄÎÄ±¾ÄÚÈİ
-	 * @param outputPath ÎÄ¼şÂ·¾¶
-	 * @param append Ö¸¶¨Ğ´Èë·½Ê½ÊÇ·ñÎª×·¼Ó
+	 * å‘outputPathæŒ‡å®šçš„æ–‡ä»¶ä¸­å†™å…¥æ–‡æœ¬contentï¼Œä»¥ç³»ç»Ÿé»˜è®¤ç¼–ç ä¿å­˜
+	 * <p>æ­¤æ–¹æ³•ä¸“ä¸ºWindowså¹³å°è®¾è®¡ï¼Œæ¢è¡Œç¬¦ä¼šä»¥\r\nå–ä»£\n
+	 * <p>ç›¸å½“äºwriteText(content, outputPath, append, Charset.defaultCharset().toString())
+	 * @param content å¾…å†™å…¥çš„æ–‡æœ¬å†…å®¹
+	 * @param outputPath æ–‡ä»¶è·¯å¾„
+	 * @param append æŒ‡å®šå†™å…¥æ–¹å¼æ˜¯å¦ä¸ºè¿½åŠ 
 	 */
 	public static void writeText(String content, String outputPath, boolean append) {
 		writeText(content, outputPath, append, Charset.defaultCharset().toString());
