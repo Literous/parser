@@ -1,17 +1,18 @@
 package kisaragi.language;
 
-public class Symbol {
+public abstract class Symbol {
 	
 	private boolean type;
+	
 	public Symbol(boolean type) {
 		this.type = type;
 	}
 	
 	/**
-	 * ÅĞ¶Ï¸ÃÎÄ·¨·ûºÅÊÇÖÕ½á·ûºÅ»¹ÊÇ·ÇÖÕ½á·ûºÅ
-	 * @return trueÎªÖÕ½á·ûºÅ, falseÎª·ÇÖÕ½á·ûºÅ
+	 * åˆ¤æ–­è¯¥æ–‡æ³•ç¬¦å·æ˜¯ç»ˆç»“ç¬¦å·è¿˜æ˜¯éç»ˆç»“ç¬¦å·
+	 * @return trueä¸ºç»ˆç»“ç¬¦å·, falseä¸ºéç»ˆç»“ç¬¦å·
 	 */
-	public boolean isToken() {
+	public boolean isTerminal() {
 		return type;
 	}
 	
@@ -35,6 +36,5 @@ public class Symbol {
 			return false;
 		return true;
 	}
-	
 	
 }

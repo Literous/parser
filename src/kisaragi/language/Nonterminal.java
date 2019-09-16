@@ -1,12 +1,15 @@
 package kisaragi.language;
 
 public class Nonterminal extends Symbol{
+	
 	private String name;
+	
 	public Nonterminal(String name) {
 		super(false);
 		this.name = name;
 	}
 	
+	@Override
 	public String toString() {
 		return name;
 	}
@@ -35,7 +38,5 @@ public class Nonterminal extends Symbol{
 			return false;
 		return true;
 	}
-	
-	
 
 }
