@@ -5,86 +5,103 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import kisaragi.language.Grammar;
 import kisaragi.language.Production;
 import kisaragi.language.Symbol;
-import kisaragi.language.Token;
+import kisaragi.language.Terminal;
 
-public class SLR extends LR{
+public class SLR extends LR0{
 	
 	@Override
-	protected void CLOSURE(Set<Production> i) {
-		// ±êÖ¾Ä³Ò»ÂÖÊÇ·ñÓĞĞÂµÄÏî¼ÓÈëiÖĞ
+	protected void CLOSURE(Set<Item> I) {
+		// æ ‡å¿—æŸä¸€è½®æ˜¯å¦æœ‰æ–°çš„é¡¹åŠ å…¥iä¸­
 		boolean flag = false;
-		// ÓÉÓÚiÔÚµü´ú¹ı³ÌÖĞÎŞ·¨¸ü¸Ä£¬¹ÊĞÂµÄÏîÏÈ¼ÓÈë¸Ã»º´æ¼¯ºÏÖĞ
-		Set<Production> temp = new HashSet<>();
+		// ç”±äºiåœ¨è¿­ä»£è¿‡ç¨‹ä¸­æ— æ³•æ›´æ”¹ï¼Œæ•…æ–°çš„é¡¹å…ˆåŠ å…¥è¯¥ç¼“å­˜é›†åˆä¸­
+		Set<Item> temp = new HashSet<>();
+		if(I.isEmpty()) {
+			return;
+		}
 		do {
 			flag = false;
-			// ¶ÔiÖĞÃ¿Ò»¸öA -> ¦Á¡¤B¦Âµü´ú
-			for (Production production : i) {
-				// »ñÈ¡ÏÂÒ»¸öÎÄ·¨·ûºÅ£¬¼´B
-				Symbol next = production.nextSymbol();
-				// ÈôÃ»ÓĞÏÂÒ»¸öÎÄ·¨·ûºÅ»òÊÇÖÕ½á·ûºÅÔòcontinue
-				if (next == null || next.isToken()) {
+			// å¯¹iä¸­æ¯ä¸€ä¸ªA -> Î±Â·BÎ²è¿­ä»£
+			for (Item item : I) {
+				// è·å–ä¸‹ä¸€ä¸ªæ–‡æ³•ç¬¦å·ï¼Œå³B
+				Symbol next = item.getNextSymbol();
+				// è‹¥æ²¡æœ‰ä¸‹ä¸€ä¸ªæ–‡æ³•ç¬¦å·æˆ–æ˜¯ç»ˆç»“ç¬¦å·åˆ™continue
+				if (next == null || next.isTerminal()) {
 					continue;
-				} else {
-					// ¶ÔÎÄ·¨Gµü´ú
-					for (Production basicProduction : basicProductionsAsKEY.keySet()) {
-						// GÖĞµÄÃ¿¸öB -> ¦Ã ÇÒ²»ÔÚiÖĞÔò¼ÓÈë»º´æ¼¯ºÏ£¬²¢½«±êÖ¾flagÖÃÎªtrue
-						if (next.equals(basicProduction.getLeft()) && !i.contains(basicProduction)) {
-							temp.add(basicProduction);
-							flag = true;
+				} 
+				else {
+					// å¯¹æ–‡æ³•Gè¿­ä»£
+					for (Production production : grammar.getProductions()) {
+						// Gä¸­çš„æ¯ä¸ªB -> Î³ ä¸”ä¸åœ¨iä¸­åˆ™åŠ å…¥ç¼“å­˜é›†åˆï¼Œå¹¶å°†æ ‡å¿—flagç½®ä¸ºtrue
+						if (next.equals(production.getLeft())) {
+							Item newItem = new Item(production);
+							if(!I.contains(newItem)) {
+								temp.add(newItem);
+								flag = true;
+							}
 						}
 					}
 				}
 			}
-			// ½«»º´æ¼¯ºÏÖĞµÄÏî¸´ÖÆµ½iÖĞ£¬²¢Çå¿Õ
-			i.addAll(temp);
+			// å°†ç¼“å­˜é›†åˆä¸­çš„é¡¹å¤åˆ¶åˆ°iä¸­ï¼Œå¹¶æ¸…ç©º
+			I.addAll(temp);
 			temp.clear();
 		} while (flag);
 	}
-
-	@Override 
-	protected void createAnalysisForm() {
-		for (Integer i : itemsAsVALUE.keySet()) {
-			Map<Symbol, String> row = new HashMap<>();
-			Set<Production> item = itemsAsVALUE.get(i);
-			for (Production production : item) {
-				Symbol next = production.nextSymbol();
+	
+	@Override
+	protected void createACTIONForm() {
+		for (int i = 0; i < Is.size(); i++) {
+			Map<Terminal, Integer> row = new HashMap<>();
+			Set<Item> I = Is.get(i);
+			for (Item item : I) {
+				Symbol next = item.getNextSymbol();
+				// A -> Î±Â·Î²
 				if(next != null) {
-					// A -> ¦Á¡¤a¦Â
-					if(next.isToken()) {
-						int j = itemsAsKEY.get(GOTO(item, next));
-						String action = new String("s" + j);
-						if(row.containsKey(next) && !row.get(next).equals(action)) {
-							return;
+					if(next.isTerminal()) {
+						int s = GOTO(i, next);
+						if(row.containsKey(next)) {
+							if(!row.get(next).equals(s)) {
+								return;
+							}
 						}
-						row.put(next, action);
-					}
-					else if(!row.containsKey(next)){
-						int j = itemsAsKEY.get(GOTO(item, next));
-						row.put(next, new String(j+""));
+						else {
+							row.put((Terminal) next, s);
+						}
 					}
 				}
-				// A -> ¦Á¡¤
+				// A -> Î±Â·
 				else {
-					for (Token token : follows.get(production.getLeft())) {
-						Production production_basic = new Production(production.getLeft(), production.getRight());
-						String action = new String("r" + basicProductionsAsKEY.get(production_basic));
-						if(row.containsKey(token) && !row.get(token).equals(action)) {
-							return;
+					Production production = item.getProduction();
+					for (Terminal terminal : grammar.FOLLOW(production.getLeft())) {
+						int r = - grammar.getProductionIndex(production);
+						if(row.containsKey(terminal)) {
+							if(!row.get(terminal).equals(r)) {
+								return;
+							}
 						}
-						row.put(token, action);
+						else {
+							row.put(terminal, r);	
+						}
 					}
 				}
 			}
-			analysisForm.put(i, row);
+			ACTIONForm.put(i, row);
 		}
 		legal = true;
 	}
 	
-	public SLR(String path) {
-		super(path);
-		createItems(false);
-		createAnalysisForm();
+	public SLR(Grammar grammar) {
+		super(grammar);
+		
+		Set<Item> I0 = new HashSet<>();
+		Item firstItem = new Item(grammar.getFirstProduction());
+		I0.add(firstItem);
+		CLOSURE(I0);
+		createGOTOForm(I0);
+		
+		createACTIONForm();
 	}
 }

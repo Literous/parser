@@ -1,50 +1,59 @@
 package kisaragi.parser;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kisaragi.language.Grammar;
 import kisaragi.language.Production;
 import kisaragi.language.Symbol;
-import kisaragi.language.Token;
+import kisaragi.language.Terminal;
 
 
-public class LR1 extends LR {
+public class LR1 extends LR0{
+
+	public LR1(Grammar grammar) {
+		super(grammar);
+		
+		Set<Item> I0 = new HashSet<>();
+		Item firstItem = new Item(grammar.getFirstProduction(), Terminal.end);
+		I0.add(firstItem);
+		CLOSURE(I0);
+		createGOTOForm(I0);
+		
+		createACTIONForm();
+	}
 
 	@Override
-	protected void CLOSURE(Set<Production> I) {
-		// ±êÖ¾Ä³Ò»ÂÖÊÇ·ñÓĞĞÂµÄÏî¼ÓÈëIÖĞ
+	protected void CLOSURE(Set<Item> I) {
+		// æ ‡å¿—æŸä¸€è½®æ˜¯å¦æœ‰æ–°çš„é¡¹åŠ å…¥Iä¸­
 		boolean flag = false;
-		// ÓÉÓÚIÔÚµü´ú¹ı³ÌÖĞÎŞ·¨¸ü¸Ä£¬¹ÊĞÂµÄÏîÏÈ¼ÓÈë¸Ã»º´æ¼¯ºÏÖĞ
-		Set<Production> temp = new HashSet<>();
+		// ç”±äºIåœ¨è¿­ä»£è¿‡ç¨‹ä¸­æ— æ³•æ›´æ”¹ï¼Œæ•…æ–°çš„é¡¹å…ˆåŠ å…¥è¯¥ç¼“å­˜é›†åˆä¸­
+		Set<Item> temp = new HashSet<>();
 		do {
 			flag = false;
-			// ¶ÔIÖĞÃ¿Ò»¸öA -> ¦Á¡¤B¦Â, aµü´ú
-			for (Production production : I) {
-				// »ñÈ¡ÏÂÒ»¸öÎÄ·¨·ûºÅ£¬¼´B
-				Symbol next = production.nextSymbol();
-				// ÈôÃ»ÓĞÏÂÒ»¸öÎÄ·¨·ûºÅ»òÊÇÖÕ½á·ûºÅÔòcontinue
-				if (next == null || next.isToken()) {
+			// å¯¹Iä¸­æ¯ä¸€ä¸ªA -> Î±Â·BÎ², aè¿­ä»£
+			for (Item item : I) {
+				// è·å–ä¸‹ä¸€ä¸ªæ–‡æ³•ç¬¦å·ï¼Œå³B
+				Symbol next = item.getNextSymbol();
+				// è‹¥æ²¡æœ‰ä¸‹ä¸€ä¸ªæ–‡æ³•ç¬¦å·æˆ–æ˜¯ç»ˆç»“ç¬¦å·åˆ™continue
+				if (next == null || next.isTerminal()) {
 					continue;
-				} else {
-					// ¶ÔÎÄ·¨Gµü´ú 
-					for (Production basicProduction : basicProductionsAsKEY.keySet()) {
-						// GÖĞµÄÃ¿¸öB -> ¦Ã
-						if (next.equals(basicProduction.getLeft())) {
-							List<Symbol> right = production.getRight();
-							List<Symbol> beta = new ArrayList<>(right.subList(production.getPointIndex() + 1, right.size()));
-							if(production.getForward() != null) {
-								beta.add(production.getForward());
-							}
-							// FIRST(¦Âa)ÖĞµÄÃ¿¸öÖÕ½á·ûºÅb
-							Set<Token> firstb = FIRST(beta);
-							for (Token b : firstb) {
-								Production p = new Production(basicProduction, b);
-								if(!I.contains(p)) {
-									temp.add(p);
+				} 
+				else {
+					// å¯¹æ–‡æ³•Gè¿­ä»£ 
+					for (Production production : grammar.getProductions()) {
+						// Gä¸­çš„æ¯ä¸ªB -> Î³
+						if (next.equals(production.getLeft())) {
+							List<Symbol> BETAa = item.getBETAa();
+							// FIRST(Î²a)ä¸­çš„æ¯ä¸ªç»ˆç»“ç¬¦å·b
+							Set<Terminal> first = grammar.FIRST(BETAa, 0);
+							for (Terminal b : first) {
+								Item new_item = new Item(production, b);
+								if(!I.contains(new_item)) {
+									temp.add(new_item);
 									flag = true;
 								}
 							}
@@ -52,53 +61,49 @@ public class LR1 extends LR {
 					}
 				}
 			}
-			// ½«»º´æ¼¯ºÏÖĞµÄÏî¸´ÖÆµ½iÖĞ£¬²¢Çå¿Õ
+			// å°†ç¼“å­˜é›†åˆä¸­çš„é¡¹å¤åˆ¶åˆ°iä¸­ï¼Œå¹¶æ¸…ç©º
 			I.addAll(temp);
 			temp.clear();
 		} while (flag);
 	}
 
 	@Override
-	protected void createAnalysisForm() {
-		for (Integer I : itemsAsVALUE.keySet()) {
-			Map<Symbol, String> row = new HashMap<>();
-			Set<Production> item = itemsAsVALUE.get(I);
-			for (Production production : item) {
-				Symbol next = production.nextSymbol();
-				// A -> ¦Á¡¤a¦Â, b
+	protected void createACTIONForm() {
+		for (int i = 0; i < Is.size(); i++) {
+			Map<Terminal, Integer> row = new HashMap<>();
+			Set<Item> I = Is.get(i);
+			for (Item item : I) {
+				Symbol next = item.getNextSymbol();
+				// A -> Î±Â·aÎ², b
 				if(next != null) {
-					if(next.isToken()) {
-						int j = itemsAsKEY.get(GOTO(item, next));
-						String action = new String("s" + j);
-						if(row.containsKey(next) && !row.get(next).equals(action)) {
+					if(next.isTerminal()) {
+						int s = GOTO(i, next);
+						if(row.containsKey(next)) {
+							if(!row.get(next).equals(s)) {
+								return;
+							}
+						}
+						else {
+							row.put((Terminal) next, s);
+						}
+					}
+				}
+				// A -> Î±Â·, a
+				else {
+					int r = - grammar.getProductionIndex(item.getProduction());
+					if(row.containsKey(item.getLookingForward())) {
+						if(!row.get(item.getLookingForward()).equals(r)) {
 							return;
 						}
-						row.put(next, action);
 					}
-					else if(!row.containsKey(next)){
-						int j = itemsAsKEY.get(GOTO(item, next));
-						row.put(next, new String(j+""));
+					else {
+						row.put(item.getLookingForward(), r);						
 					}
-				}
-				// A -> ¦Á¡¤, a
-				else {
-					Production production_basic = new Production(production.getLeft(), production.getRight());
-
-					String action = new String("r" + basicProductionsAsKEY.get(production_basic));
-					if(row.containsKey(production.getForward()) && !row.get(production.getForward()).equals(action)) {
-						return;
-					}
-					row.put(production.getForward(), action);
 				}
 			}
-			analysisForm.put(I, row);
+			ACTIONForm.put(i, row);
 		}
 		legal = true;
 	}
 
-	public LR1(String path) {
-		super(path);
-		createItems(true);
-		createAnalysisForm();
-	}
 }

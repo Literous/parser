@@ -8,61 +8,80 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import kisaragi.language.Grammar;
 import kisaragi.language.Nonterminal;
 import kisaragi.language.Production;
 import kisaragi.language.Symbol;
-import kisaragi.language.Token;
+import kisaragi.language.Terminal;
 
 
-public class LL1 extends L {
+public class LL1 {
 
-	private Map<Nonterminal, Map<Token, Production>> analysisForm = new HashMap<>();
-	
+	private Map<Nonterminal, Map<Terminal, Production>> analysisForm = new HashMap<>();
+	private Grammar grammar = null;
+	private boolean legal = false;
 	
 	private void createAnalysisForm() {
-		for(Symbol symbol : symbols) {
-			if(!symbol.isToken()) {
-				Map<Token, Production> row = new HashMap<>();
+		for(Symbol symbol : grammar.getSymbols()) {
+			if(!symbol.isTerminal()) {
+				Map<Terminal, Production> row = new HashMap<>();
 				analysisForm.put((Nonterminal)symbol, row);
 			}
 		}
-		Map<Token, Production> row = new HashMap<>();
-		analysisForm.put(firstProduction.getLeft(), row);
 		
-		for (Production production : basicProductionsAsKEY.keySet()) {
-			Set<Token> firstalpha = FIRST(production.getRight());
-			for (Token token : firstalpha) {
-				Map<Token, Production> rowtemp = analysisForm.get(production.getLeft());
-				rowtemp.put(token, production);
-			}
-			if(firstalpha.contains(Token.e)) {
-				Set<Token> followalpha = follows.get(production.getLeft());
-				for (Token token : followalpha) {
-					Map<Token, Production> rowtemp = analysisForm.get(production.getLeft());
+		for (Production production : grammar.getProductions()) {
+			Set<Terminal> firstalpha = grammar.FIRST(production.getRight(), 0);
+			for (Terminal token : firstalpha) {
+				Map<Terminal, Production> rowtemp = analysisForm.get(production.getLeft());
+				if(rowtemp.containsKey(token)) {
+					if(!rowtemp.get(token).equals(production)) {
+						return;
+					}
+				}
+				else {
 					rowtemp.put(token, production);
 				}
 			}
+			if(firstalpha.contains(Terminal.e)) {
+				Set<Terminal> followalpha = grammar.FOLLOW(production.getLeft());
+				for (Terminal token : followalpha) {
+					Map<Terminal, Production> rowtemp = analysisForm.get(production.getLeft());
+					if(rowtemp.containsKey(token)) {
+						if(!rowtemp.get(token).equals(production)) {
+							return;
+						}
+					}
+					else {
+						rowtemp.put(token, production);
+					}
+				}
+			}
 		}
+		legal = true;
 	}
 	
-	public LL1(String path) {
-		super(path);
+	public LL1(Grammar grammar) {
+		this.grammar = grammar;
 		createAnalysisForm();
 	}
 	
-	public void program(List<Token> tokens) {
+	public boolean isLegal() {
+		return legal;
+	}
+	
+	public void program(List<Terminal> tokens) {
 		int count = 0;
-		Token ip = tokens.get(count++);
+		Terminal ip = tokens.get(count++);
 		Stack<Symbol> stack = new Stack<>();
-		stack.push(Token.end);
-		stack.push(firstProduction.getLeft());
+		stack.push(Terminal.end);
+		stack.push(grammar.getFirstNonTerminal());
 		Symbol X = stack.peek();
-		while(!X.equals(Token.end)) {
+		while(!X.equals(Terminal.end)) {
 			if(X.equals(ip)) {
 				stack.pop();
 				ip = tokens.get(count++);
 			}
-			else if(X.isToken()){
+			else if(X.isTerminal()){
 				System.out.println("error");
 				return;
 			}
@@ -87,12 +106,12 @@ public class LL1 extends L {
 	public String displayAnalysisForm() {
 		
 		List<Symbol> symbolEX = new ArrayList<>();
-		for (Symbol symbol : symbols) {
-			if(symbol.isToken()) {
+		for (Symbol symbol : grammar.getSymbols()) {
+			if(symbol.isTerminal()) {
 				symbolEX.add(symbol);
 			}
 		}
-		symbolEX.add(Token.end);
+		symbolEX.add(Terminal.end);
 		
 		StringBuffer sb = new StringBuffer();
 		sb.append("Nonterminal|");
@@ -106,7 +125,7 @@ public class LL1 extends L {
 		}
 		sb.append("\n");
 		for(Nonterminal i : analysisForm.keySet()) {
-			Map<Token, Production> row = analysisForm.get(i);
+			Map<Terminal, Production> row = analysisForm.get(i);
 			
 			sb.append(i + "|");
 			for(Symbol symbol : symbolEX) {
